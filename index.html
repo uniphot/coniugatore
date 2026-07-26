@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coniugatore — Italiano Yopta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,600;1,6..72,500&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&family=Caveat:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <span class="brand-kick">Italiano Yopta</span>
+      <h1 class="logo">CONIUGATORE<span class="dot">.</span></h1>
+      <p class="tagline">Coniugatore di verbi italiani — con l'accento tonico segnato su ogni forma</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- SEARCH -->
+    <section class="search-block" id="searchBlock">
+      <div class="search-shell">
+        <input
+          id="search"
+          class="search-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Scrivi un verbo…  (parlare, fare, finire)"
+          aria-label="Cerca un verbo"
+          aria-expanded="false"
+          aria-controls="suggestions"
+        />
+        <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="result" hidden>
+      <!-- verb header -->
+      <div class="verb-head" id="verbHead"></div>
+
+      <!-- tense selector -->
+      <div class="controls">
+        <div class="controls-top">
+          <h2 class="controls-title">Tempi</h2>
+          <div class="controls-actions">
+            <button class="mini" id="selNone" type="button">cancella</button>
+            <button class="mini" id="selCommon" type="button">comuni</button>
+          </div>
+        </div>
+        <div id="tenseSelector" class="tense-selector"></div>
+      </div>
+
+      <!-- conjugation tables -->
+      <div id="tables" class="tables"></div>
+      <p class="empty-hint" id="emptyHint" hidden>Scegli uno o più tempi qui sopra ↑</p>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <p class="stress-note" lang="ru">
+      Уда́рная гла́сная <span class="stress-demo">вы&shy;<span class="stress">де</span>лена</span> цве́том.
+      Значо́к <span class="legend-approx">•</span> отмеча́ет фо́рму, где ударе́ние в осно́ве определено́ автомати́чески.
+    </p>
+    <p class="brand-foot">Coniugatore — un progetto di <b>Italiano Yopta</b></p>
+    <p class="hand-note">Fatto con <span class="heart">❤</span> e caffè</p>
+  </footer>
+
+  <script src="js/engine.js?v=5"></script>
+  <script src="js/verbs.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
+</body>
+</html>
