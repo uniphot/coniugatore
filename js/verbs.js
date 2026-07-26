@@ -1041,6 +1041,301 @@
   ];
   EXTRA_REG2.forEach(function (entry) { VERBS[entry[0]] = buildReg(entry); });
 
+  // ===================================================================
+  //  EXPANSION BATCH 3
+  // ===================================================================
+
+  // -- irregular-present full bases --
+  var EXTRA_FULL3 = {
+    parere: {
+      inf: 'parere', tr: 'to seem', group: 'ere', stem: 'par', aux: 'essere',
+      irregular: true, defectiveImperative: true,
+      presente:      ['pAio', 'pAri', 'pAre', 'paiAmo', 'parEte', 'pAiono'],
+      passatoRemoto: ['pArvi', 'parEsti', 'pArve', 'parEmmo', 'parEste', 'pArvero'],
+      futuroStem:    'parr',
+      congPresente:  ['pAia', 'pAia', 'pAia', 'paiAmo', 'paiAte', 'pAiano'],
+      pp: 'pArso'
+    },
+    dolere: {
+      inf: 'dolere', tr: 'to ache / hurt', group: 'ere', stem: 'dol', aux: 'avere',
+      irregular: true, defectiveImperative: true,
+      presente:      ['dOlgo', 'duOli', 'duOle', 'dogliAmo', 'dolEte', 'dOlgono'],
+      passatoRemoto: ['dOlsi', 'dolEsti', 'dOlse', 'dolEmmo', 'dolEste', 'dOlsero'],
+      futuroStem:    'dorr',
+      congPresente:  ['dOlga', 'dOlga', 'dOlga', 'dogliAmo', 'dogliAte', 'dOlgano'],
+      pp: 'dolUto'
+    },
+    sciogliere: {
+      inf: 'sciogliere', tr: 'to untie / melt', group: 'ere', stem: 'sciogli', aux: 'avere', irregular: true,
+      presente:      ['sciOlgo', 'sciOgli', 'sciOglie', 'sciogliAmo', 'sciogliEte', 'sciOlgono'],
+      passatoRemoto: ['sciOlsi', 'sciogliEsti', 'sciOlse', 'sciogliEmmo', 'sciogliEste', 'sciOlsero'],
+      congPresente:  ['sciOlga', 'sciOlga', 'sciOlga', 'sciogliAmo', 'sciogliAte', 'sciOlgano'],
+      imperativo:    ['sciOgli', 'sciOlga', 'sciogliAmo', 'sciogliEte', 'sciOlgano'],
+      pp: 'sciOlto'
+    }
+  };
+  Object.keys(EXTRA_FULL3).forEach(function (k) { BASES[k] = EXTRA_FULL3[k]; VERBS[k] = EXTRA_FULL3[k]; });
+
+  // -- more sigmatic -ere bases --
+  var SIG3 = [
+    ['distinguere', 'to distinguish', 'distingu', 'distIns', 'distInto'],
+    ['estinguere', 'to extinguish', 'estingu', 'estIns', 'estInto'],
+    ['flettere', 'to flex', 'flett', 'flEss', 'flEsso'],
+    ['annettere', 'to annex', 'annett', 'annEss', 'annEsso'],
+    ['connettere', 'to connect', 'connett', 'connEss', 'connEsso'],
+    ['espellere', 'to expel', 'espell', 'espUls', 'espUlso'],
+    ['redimere', 'to redeem', 'redim', 'redEns', 'redEnto'],
+    ['affiggere', 'to affix / post', 'affig', 'affIss', 'affIsso'],
+    ['trafiggere', 'to pierce', 'trafig', 'trafIss', 'trafItto'],
+    ['prediligere', 'to prefer', 'predilig', 'predilEss', 'predilEtto'],
+    ['recidere', 'to cut off', 'recid', 'recIs', 'recIso'],
+    ['incidere', 'to engrave / affect', 'incid', 'incIs', 'incIso'],
+    ['coincidere', 'to coincide', 'coincid', 'coincIs', 'coincIso'],
+    ['elidere', 'to elide', 'elid', 'elIs', 'elIso'],
+    ['collidere', 'to collide', 'collid', 'collIs', 'collIso'],
+    ['pervadere', 'to pervade', 'pervad', 'pervAs', 'pervAso'],
+    ['ledere', 'to harm', 'led', 'lEs', 'lEso'],
+    ['espandere', 'to expand', 'espand', 'espAns', 'espAnso'],
+    ['piovere', 'to rain', 'piov', 'piOvv', 'piovUto', 'essere']
+  ];
+  SIG3.forEach(function (r) { var v = buildSig(r); BASES[r[0]] = v; VERBS[r[0]] = v; });
+
+  // -- more families --
+  var EXTRA_FAMILIES3 = [
+    ['fare', [['soddis', 'soddisfare', 'to satisfy']]],
+    ['sedere', [['pos', 'possedere', 'to own', 'avere']]],
+    ['scegliere', [['pre', 'prescegliere', 'to select']]],
+    ['sciogliere', [['di', 'disciogliere', 'to dissolve']]],
+    ['flettere', [['ri', 'riflettere', 'to reflect'], ['de', 'deflettere', 'to deflect']]],
+    ['porre', [
+      ['ap', 'apporre', 'to affix'], ['pre', 'preporre', 'to place before'],
+      ['scom', 'scomporre', 'to break down'], ['sovrap', 'sovrapporre', 'to superimpose']
+    ]],
+    ['trarre', [['pro', 'protrarre', 'to prolong'], ['as', 'astrarre', 'to abstract']]],
+    ['correre', [
+      ['tras', 'trascorrere', 'to spend (time)'], ['in', 'incorrere', 'to incur', 'essere'],
+      ['de', 'decorrere', 'to elapse', 'essere']
+    ]],
+    ['salire', [['as', 'assalire', 'to assault', 'avere'], ['ri', 'risalire', 'to go back up', 'essere']]]
+  ];
+  EXTRA_FAMILIES3.forEach(function (fam) {
+    var base = BASES[fam[0]];
+    fam[1].forEach(function (m) { VERBS[m[1]] = derive(base, m[0], m[1], m[2], m[3]); });
+  });
+  [['durre', [
+    ['de', 'dedurre', 'to deduce'], ['ad', 'addurre', 'to adduce'], ['ricon', 'ricondurre', 'to lead back']
+  ]]].forEach(function (fam) {
+    var base = TEMPLATES[fam[0]];
+    fam[1].forEach(function (m) { VERBS[m[1]] = derive(base, m[0], m[1], m[2], m[3]); });
+  });
+
+  // -- more regular verbs --
+  var EXTRA_REG3 = [
+    /* -sistere group (pp in -istito) */
+    ['esistere', 'to exist', { pp: 'esistIto', sstem: 'esIst', aux: 'essere' }],
+    ['insistere', 'to insist', { pp: 'insistIto', sstem: 'insIst' }],
+    ['resistere', 'to resist', { pp: 'resistIto', sstem: 'resIst' }],
+    ['assistere', 'to assist', { pp: 'assistIto', sstem: 'assIst' }],
+    ['persistere', 'to persist', { pp: 'persistIto', sstem: 'persIst' }],
+    ['desistere', 'to desist', { pp: 'desistIto', sstem: 'desIst' }],
+    ['coesistere', 'to coexist', { pp: 'coesistIto', sstem: 'coesIst', aux: 'essere' }],
+    /* -cedere (regular, pp in -eduto) */
+    ['precedere', 'to precede', { sstem: 'precEd' }],
+    ['procedere', 'to proceed', { sstem: 'procEd', aux: 'essere' }],
+    ['accedere', 'to access', { sstem: 'accEd', aux: 'essere' }],
+    ['eccedere', 'to exceed', { sstem: 'eccEd' }],
+    ['retrocedere', 'to retreat', { sstem: 'retrocEd' }],
+    /* impersonal / weather */
+    ['nevicare', 'to snow', { ortho: 'care', sstem: 'nEvic', aux: 'essere' }],
+    ['grandinare', 'to hail', { sstem: 'grAndin', aux: 'essere' }],
+    ['tuonare', 'to thunder', { sstem: 'tuOn' }],
+    ['lampeggiare', 'to flash (lightning)', { ortho: 'giare', sstem: 'lampEggi' }],
+    ['bisognare', 'to be necessary', { sstem: 'bisOgn', aux: 'essere' }],
+    /* more -are */
+    ['aggiustare', 'to fix'],
+    ['allargare', 'to widen', { ortho: 'gare', sstem: 'allArg' }],
+    ['annaffiare', 'to water', { ortho: 'iare', sstem: 'annAffi' }],
+    ['appoggiare', 'to lean / support', { ortho: 'giare', sstem: 'appOggi' }],
+    ['arredare', 'to furnish'],
+    ['brillare', 'to shine'],
+    ['calmare', 'to calm'],
+    ['caricare', 'to load', { ortho: 'care', sstem: 'cAric' }],
+    ['circondare', 'to surround', { sstem: 'circOnd' }],
+    ['congelare', 'to freeze'],
+    ['consegnare', 'to deliver', { sstem: 'consEgn' }],
+    ['coltivare', 'to cultivate', { sstem: 'coltIv' }],
+    ['danneggiare', 'to damage', { ortho: 'giare', sstem: 'dannEggi' }],
+    ['depositare', 'to deposit', { sstem: 'depOsit' }],
+    ['digitare', 'to type', { sstem: 'dIgit' }],
+    ['esaminare', 'to examine', { sstem: 'esAmin' }],
+    ['fabbricare', 'to manufacture', { ortho: 'care', sstem: 'fAbbric' }],
+    ['fissare', 'to fix / stare at'],
+    ['galleggiare', 'to float', { ortho: 'giare', sstem: 'gallEggi' }],
+    ['generare', 'to generate', { sstem: 'gEner' }],
+    ['gonfiare', 'to inflate', { ortho: 'iare', sstem: 'gOnfi' }],
+    ['inquinare', 'to pollute', { sstem: 'inquIn' }],
+    ['licenziare', 'to fire (from a job)', { ortho: 'iare', sstem: 'licEnzi' }],
+    ['macchiare', 'to stain', { ortho: 'iare', sstem: 'mAcchi' }],
+    ['mescolare', 'to mix', { sstem: 'mEscol' }],
+    ['nominare', 'to appoint', { sstem: 'nOmin' }],
+    ['ritardare', 'to delay'],
+    ['rubare', 'to steal'],
+    ['scaricare', 'to download / unload', { ortho: 'care', sstem: 'scAric' }],
+    ['sfidare', 'to challenge'],
+    ['sfruttare', 'to exploit'],
+    ['sorvegliare', 'to watch over', { ortho: 'giare', sstem: 'sorvEgli' }],
+    ['sottolineare', 'to underline', { sstem: 'sottolIne' }],
+    ['sviluppare', 'to develop', { sstem: 'svilUpp' }],
+    ['valutare', 'to evaluate', { sstem: 'valUt' }],
+    /* more -isc */
+    ['aderire', 'to adhere', { isc: true }],
+    ['ammonire', 'to admonish', { isc: true }],
+    ['assorbire', 'to absorb', { isc: true }],
+    ['deperire', 'to waste away', { isc: true, aux: 'essere' }],
+    ['istruire', 'to instruct', { isc: true }],
+    ['scandire', 'to enunciate', { isc: true }],
+    ['scaturire', 'to spring forth', { isc: true, aux: 'essere' }],
+    ['seppellire', 'to bury', { isc: true, pp: 'sepOlto' }],
+    ['smarrire', 'to lose / mislay', { isc: true }],
+    ['spartire', 'to share out', { isc: true }],
+    ['starnutire', 'to sneeze', { isc: true }]
+  ];
+  EXTRA_REG3.forEach(function (entry) { VERBS[entry[0]] = buildReg(entry); });
+
+  // ===================================================================
+  //  EXPANSION BATCH 4
+  // ===================================================================
+
+  // -- more sigmatic -ere bases --
+  var SIG4 = [
+    ['ardere', 'to burn', 'ard', 'Ars', 'Arso'],
+    ['dipendere', 'to depend', 'dipend', 'dipEs', 'dipEso', 'essere'],
+    ['sospendere', 'to suspend', 'sospend', 'sospEs', 'sospEso'],
+    ['eccellere', 'to excel', 'eccell', 'eccEls', 'eccElso'],
+    ['tingere', 'to dye', 'ting', 'tIns', 'tInto'],
+    ['sommergere', 'to submerge', 'sommerg', 'sommErs', 'sommErso'],
+    ['detergere', 'to cleanse', 'deterg', 'detErs', 'detErso'],
+    ['dissolvere', 'to dissolve', 'dissolv', 'dissOls', 'dissOlto']
+  ];
+  SIG4.forEach(function (r) { var v = buildSig(r); BASES[r[0]] = v; VERBS[r[0]] = v; });
+
+  // -- more families --
+  var EXTRA_FAMILIES4 = [
+    ['spingere', [['re', 'respingere', 'to reject'], ['so', 'sospingere', 'to push forward']]],
+    ['torcere', [
+      ['con', 'contorcere', 'to contort'], ['dis', 'distorcere', 'to distort'],
+      ['s', 'storcere', 'to twist'], ['ri', 'ritorcere', 'to retort']
+    ]],
+    ['rodere', [['cor', 'corrodere', 'to corrode'], ['e', 'erodere', 'to erode']]],
+    ['leggere', [['e', 'eleggere', 'to elect'], ['ri', 'rileggere', 'to reread']]],
+    ['vincere', [['av', 'avvincere', 'to captivate']]],
+    ['cingere', [['ac', 'accingere', 'to prepare (oneself)']]],
+    ['tingere', [['at', 'attingere', 'to draw (from)'], ['ri', 'ritingere', 'to re-dye']]],
+    ['tendere', [['con', 'contendere', 'to contend'], ['sot', 'sottendere', 'to underlie']]],
+    ['nascere', [['ri', 'rinascere', 'to be reborn', 'essere']]],
+    ['vedere', [['pre', 'prevedere', 'to foresee'], ['ri', 'rivedere', 'to see again']]],
+    ['valere', [['pre', 'prevalere', 'to prevail', 'essere'], ['equi', 'equivalere', 'to be equivalent', 'essere']]],
+    ['uscire', [['ri', 'riuscire', 'to succeed', 'essere']]],
+    ['porre', [['ante', 'anteporre', 'to put before'], ['presup', 'presupporre', 'to presuppose']]]
+  ];
+  EXTRA_FAMILIES4.forEach(function (fam) {
+    var base = BASES[fam[0]];
+    fam[1].forEach(function (m) { VERBS[m[1]] = derive(base, m[0], m[1], m[2], m[3]); });
+  });
+
+  // -- more regular verbs --
+  var EXTRA_REG4 = [
+    ['abbronzare', 'to tan'],
+    ['accarezzare', 'to caress', { sstem: 'accarEzz' }],
+    ['accelerare', 'to accelerate', { sstem: 'accEler' }],
+    ['addormentare', 'to put to sleep', { sstem: 'addormEnt' }],
+    ['allontanare', 'to move away', { sstem: 'allontAn' }],
+    ['ammazzare', 'to kill'],
+    ['annunciare', 'to announce', { ortho: 'ciare', sstem: 'annUnci' }],
+    ['approvare', 'to approve'],
+    ['assaggiare', 'to taste', { ortho: 'giare', sstem: 'assAggi' }],
+    ['attraversare', 'to cross'],
+    ['avvisare', 'to notify'],
+    ['cacciare', 'to hunt / chase', { ortho: 'ciare', sstem: 'cAcci' }],
+    ['capitare', 'to happen', { sstem: 'cApit', aux: 'essere' }],
+    ['collocare', 'to place', { ortho: 'care', sstem: 'collOc' }],
+    ['comandare', 'to command'],
+    ['condannare', 'to condemn'],
+    ['confrontare', 'to compare'],
+    ['conquistare', 'to conquer'],
+    ['dubitare', 'to doubt', { sstem: 'dUbit' }],
+    ['educare', 'to educate', { ortho: 'care', sstem: 'Educ' }],
+    ['eliminare', 'to eliminate', { sstem: 'elImin' }],
+    ['esitare', 'to hesitate', { sstem: 'Esit' }],
+    ['faticare', 'to toil', { ortho: 'care', sstem: 'fatIc' }],
+    ['filmare', 'to film'],
+    ['formare', 'to form'],
+    ['fotografare', 'to photograph', { sstem: 'fotogrAf' }],
+    ['frenare', 'to brake'],
+    ['giudicare', 'to judge', { ortho: 'care', sstem: 'giUdic' }],
+    ['governare', 'to govern'],
+    ['gridare', 'to shout'],
+    ['impegnare', 'to commit', { sstem: 'impEgn' }],
+    ['indovinare', 'to guess', { sstem: 'indovIn' }],
+    ['informare', 'to inform'],
+    ['ingannare', 'to deceive'],
+    ['interrogare', 'to interrogate', { ortho: 'gare', sstem: 'interrOg' }],
+    ['legare', 'to tie', { ortho: 'gare', sstem: 'lEg' }],
+    ['meritare', 'to deserve', { sstem: 'mErit' }],
+    ['minacciare', 'to threaten', { ortho: 'ciare', sstem: 'minAcci' }],
+    ['modificare', 'to modify', { ortho: 'care', sstem: 'modIfic' }],
+    ['mostrare', 'to show'],
+    ['navigare', 'to navigate', { ortho: 'gare', sstem: 'nAvig' }],
+    ['negare', 'to deny', { ortho: 'gare', sstem: 'nEg' }],
+    ['noleggiare', 'to rent', { ortho: 'giare', sstem: 'nolEggi' }],
+    ['obbligare', 'to oblige', { ortho: 'gare', sstem: 'Obblig' }],
+    ['pescare', 'to fish', { ortho: 'care', sstem: 'pEsc' }],
+    ['piegare', 'to fold', { ortho: 'gare', sstem: 'piEg' }],
+    ['posare', 'to lay down'],
+    ['precisare', 'to specify'],
+    ['procurare', 'to procure'],
+    ['progettare', 'to plan'],
+    ['protestare', 'to protest'],
+    ['pubblicare', 'to publish', { ortho: 'care', sstem: 'pUbblic' }],
+    ['raffreddare', 'to cool'],
+    ['rallentare', 'to slow down'],
+    ['recitare', 'to recite / act', { sstem: 'rEcit' }],
+    ['regolare', 'to regulate', { sstem: 'rEgol' }],
+    ['riparare', 'to repair'],
+    ['rischiare', 'to risk', { ortho: 'iare', sstem: 'rIschi' }],
+    ['risparmiare', 'to save', { ortho: 'iare', sstem: 'rispArmi' }],
+    ['scaldare', 'to heat'],
+    ['scambiare', 'to exchange', { ortho: 'iare', sstem: 'scAmbi' }],
+    ['scivolare', 'to slip', { sstem: 'scIvol', aux: 'essere' }],
+    ['seminare', 'to sow', { sstem: 'sEmin' }],
+    ['separare', 'to separate'],
+    ['soffiare', 'to blow', { ortho: 'iare', sstem: 'sOffi' }],
+    ['sospettare', 'to suspect'],
+    ['stampare', 'to print'],
+    ['stancare', 'to tire', { ortho: 'care', sstem: 'stAnc' }],
+    ['stimare', 'to esteem'],
+    ['tentare', 'to attempt'],
+    ['timbrare', 'to stamp'],
+    ['toccare', 'to touch', { ortho: 'care', sstem: 'tOcc' }],
+    ['tollerare', 'to tolerate', { sstem: 'tOller' }],
+    ['tormentare', 'to torment'],
+    ['trascinare', 'to drag', { sstem: 'trascIn' }],
+    ['truccare', 'to make up', { ortho: 'care', sstem: 'trUcc' }],
+    ['urtare', 'to bump'],
+    ['vietare', 'to forbid'],
+    /* isc */
+    ['diminuire', 'to decrease', { isc: true, aux: 'essere' }],
+    ['indebolire', 'to weaken', { isc: true }],
+    ['ringiovanire', 'to rejuvenate', { isc: true, aux: 'essere' }],
+    ['arrostire', 'to roast', { isc: true }],
+    ['inghiottire', 'to swallow', { isc: true }],
+    ['ribadire', 'to reaffirm', { isc: true }],
+    ['sbalordire', 'to astonish', { isc: true }],
+    ['sfinire', 'to exhaust', { isc: true }],
+    ['rifinire', 'to finish off', { isc: true }]
+  ];
+  EXTRA_REG4.forEach(function (entry) { VERBS[entry[0]] = buildReg(entry); });
+
   // sorted infinitive list for autocomplete
   var VERB_LIST = Object.keys(VERBS).map(function (k) {
     return { inf: VERBS[k].inf, tr: VERBS[k].tr };
