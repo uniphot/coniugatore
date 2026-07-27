@@ -164,7 +164,7 @@ html, body {
 
 /* ------------------------------ practice ------------------------------ */
 .practice {
-  max-width: 640px; margin: 22px auto 0;
+  max-width: 640px; margin: 22px auto 44px;
   border: var(--edge-2) solid var(--ink); border-radius: var(--radius);
   background: var(--card); box-shadow: var(--shadow);
   padding: 18px 20px 22px;
