@@ -1336,10 +1336,43 @@
   ];
   EXTRA_REG4.forEach(function (entry) { VERBS[entry[0]] = buildReg(entry); });
 
+  // 5) a few common regulars needed to complete the frequency lists
+  var EXTRA_REG5 = [
+    ['bastare', 'to be enough', { aux: 'essere' }],
+    ['contare', 'to count'],
+    ['guidare', 'to drive'],
+    ['rappresentare', 'to represent', { sstem: 'rappresEnt' }],
+    ['trattare', 'to treat / deal with'],
+    ['volare', 'to fly']
+  ];
+  EXTRA_REG5.forEach(function (entry) { VERBS[entry[0]] = buildReg(entry); });
+
   // sorted infinitive list for autocomplete
   var VERB_LIST = Object.keys(VERBS).map(function (k) {
     return { inf: VERBS[k].inf, tr: VERBS[k].tr };
   }).sort(function (a, b) { return a.inf < b.inf ? -1 : 1; });
 
-  global.VerbData = { VERBS: VERBS, VERB_LIST: VERB_LIST };
+  // Frequency-ranked infinitives (rough descending frequency) for practice
+  // without a prior lookup. Every entry exists in VERBS.
+  var COMMON_RANKED = [
+    'essere', 'avere', 'fare', 'dire', 'potere', 'volere', 'sapere', 'dare', 'stare', 'dovere',
+    'vedere', 'andare', 'venire', 'parlare', 'trovare', 'sentire', 'lasciare', 'prendere', 'guardare', 'credere',
+    'pensare', 'passare', 'portare', 'mettere', 'rimanere', 'tenere', 'capire', 'sembrare', 'aspettare', 'chiedere',
+    'vivere', 'cercare', 'entrare', 'ricordare', 'chiamare', 'parere', 'tornare', 'conoscere', 'arrivare', 'diventare',
+    'morire', 'aprire', 'scrivere', 'perdere', 'uscire', 'riuscire', 'mantenere', 'cominciare', 'correre', 'chiudere',
+    'decidere', 'comprare', 'mangiare', 'leggere', 'presentare', 'considerare', 'permettere', 'continuare', 'muovere', 'seguire',
+    'bastare', 'vincere', 'offrire', 'provare', 'usare', 'nascere', 'servire', 'giocare', 'dormire', 'pagare',
+    'ricevere', 'spiegare', 'comprendere', 'ascoltare', 'girare', 'salire', 'scendere', 'dividere', 'rispondere', 'mostrare',
+    'raggiungere', 'togliere', 'cadere', 'contare', 'esistere', 'studiare', 'insegnare', 'imparare', 'lavorare', 'amare',
+    'aiutare', 'ripetere', 'incontrare', 'guidare', 'cambiare', 'aggiungere', 'evitare', 'cantare', 'ballare', 'viaggiare',
+    'cucinare', 'ottenere', 'produrre', 'rappresentare', 'indicare', 'riconoscere', 'raccontare', 'discutere', 'esprimere', 'ridurre',
+    'costruire', 'crescere', 'spendere', 'sperare', 'dimenticare', 'telefonare', 'comunicare', 'controllare', 'preparare', 'spingere',
+    'aumentare', 'trattare', 'bere', 'scegliere', 'piacere', 'reggere', 'rompere', 'nascondere', 'accendere', 'spegnere',
+    'vestire', 'pulire', 'finire', 'preferire', 'costare', 'partire', 'accettare', 'rispettare', 'dubitare', 'meritare',
+    'significare', 'occupare', 'dedicare', 'sviluppare', 'concludere', 'condurre', 'tradurre', 'distruggere', 'convincere', 'descrivere',
+    'dipendere', 'riflettere', 'sostenere', 'sorridere', 'piangere', 'ridere', 'baciare', 'abbracciare', 'sognare', 'nuotare',
+    'saltare'
+  ].filter(function (inf) { return !!VERBS[inf]; });
+
+  global.VerbData = { VERBS: VERBS, VERB_LIST: VERB_LIST, COMMON_RANKED: COMMON_RANKED };
 })(typeof window !== 'undefined' ? window : this);

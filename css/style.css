@@ -195,6 +195,7 @@ html, body {
   text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
 }
 .pr-dim { color: var(--muted); font-weight: 400; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
 .pr-start {
   align-self: flex-start;
   font-family: var(--f-head); font-size: 14px; font-weight: 700;

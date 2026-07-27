@@ -8,6 +8,7 @@
   var C = window.Conjugator;
   var VERBS = window.VerbData.VERBS;
   var LIST = window.VerbData.VERB_LIST;
+  var RANKED = window.VerbData.COMMON_RANKED || [];
 
   var COMMON = ['presente', 'imperfetto', 'passatoProssimo', 'futuroSemplice',
                 'congPresente', 'condizionale'];
@@ -284,7 +285,12 @@
     saveHistory([]);
     renderRecent();
     updateRipetiVisibility();
-    if (practice.active) closePractice();
+    // If the setup screen is open (no quiz in progress), refresh it so the
+    // "Cercati" source reflects the now-empty history; leave a running quiz alone.
+    if (practice.active && practice.queue.length === 0) {
+      practice.source = 'common';
+      renderPracticeSetup();
+    }
   }
 
   function renderRecent() {
@@ -302,7 +308,8 @@
   }
 
   function updateRipetiVisibility() {
-    $ripeti.hidden = loadHistory().length === 0;
+    // Always available: practice works from the common-verb list even with no lookups.
+    $ripeti.hidden = false;
   }
 
   // =====================================================================
@@ -310,8 +317,10 @@
   // =====================================================================
   var practice = {
     active: false,
+    source: 'recent',   // 'recent' (looked-up verbs) or 'common' (frequency list)
     selected: new Set(['presente']),
     verbCount: 10,      // how many recent verbs to draw from
+    commonCount: 50,    // how many of the most-common verbs, or 'all'
     length: 20,         // session length: a number, or 'all'
     queue: [],
     idx: 0,
@@ -351,10 +360,18 @@
     return a;
   }
 
-  function buildQueue() {
-    var pool = loadHistory().slice(0, practice.verbCount).map(function (h) {
+  function practicePool() {
+    if (practice.source === 'common') {
+      var n = practice.commonCount === 'all' ? RANKED.length : practice.commonCount;
+      return RANKED.slice(0, n).map(function (inf) { return VERBS[inf] || buildFallback(inf); });
+    }
+    return loadHistory().slice(0, practice.verbCount).map(function (h) {
       return VERBS[h.inf] || buildFallback(h.inf);
     });
+  }
+
+  function buildQueue() {
+    var pool = practicePool();
     var tenses = C.TENSES.filter(function (t) { return practice.selected.has(t.key); });
     var q = [];
     pool.forEach(function (v) {
@@ -374,6 +391,8 @@
 
   function openPractice() {
     practice.active = true;
+    // With no lookups yet, start from the common-verb list.
+    if (!loadHistory().length) practice.source = 'common';
     $practice.hidden = false;
     renderPracticeSetup();
     $practice.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -394,19 +413,36 @@
   }
 
   function renderPracticeSetup() {
+    practice.queue = [];   // on the setup screen there is no quiz in progress
     var histLen = loadHistory().length;
-    if (!histLen) {
-      $practice.innerHTML = prHead() +
-        '<p class="pr-note">Cerca prima qualche verbo — appariranno qui per allenarti.</p>';
-      return;
-    }
 
-    var countChips = [5, 10, 20].map(function (n) {
-      var on = practice.verbCount === n ? ' on' : '';
-      var avail = Math.min(n, histLen);
-      return '<button class="chip pr-count' + on + '" type="button" data-count="' + n + '">ultimi ' + n +
-             (avail < n ? ' <span class="pr-dim">(' + avail + ')</span>' : '') + '</button>';
-    }).join('');
+    // source: looked-up verbs vs the frequency list
+    var recentOn = practice.source === 'recent' ? ' on' : '';
+    var commonOn = practice.source === 'common' ? ' on' : '';
+    var recentDisabled = histLen === 0 ? ' disabled' : '';
+    var sourceChips =
+      '<button class="chip pr-source' + recentOn + '" type="button" data-source="recent"' + recentDisabled + '>' +
+        'Cercati' + (histLen ? ' <span class="pr-dim">(' + histLen + ')</span>' : '') + '</button>' +
+      '<button class="chip pr-source' + commonOn + '" type="button" data-source="common">Più comuni</button>';
+
+    // count row — depends on the chosen source
+    var countLabel, countChips;
+    if (practice.source === 'common') {
+      countLabel = 'Quanti';
+      countChips = [50, 100, 'all'].map(function (n) {
+        var on = practice.commonCount === n ? ' on' : '';
+        var label = n === 'all' ? 'tutti ' + RANKED.length : 'primi ' + n;
+        return '<button class="chip pr-common-count' + on + '" type="button" data-count="' + n + '">' + label + '</button>';
+      }).join('');
+    } else {
+      countLabel = 'Verbi';
+      countChips = [5, 10, 20].map(function (n) {
+        var on = practice.verbCount === n ? ' on' : '';
+        var avail = Math.min(n, histLen);
+        return '<button class="chip pr-count' + on + '" type="button" data-count="' + n + '">ultimi ' + n +
+               (avail < n ? ' <span class="pr-dim">(' + avail + ')</span>' : '') + '</button>';
+      }).join('');
+    }
 
     var lenChips = [20, 'all'].map(function (n) {
       var on = practice.length === n ? ' on' : '';
@@ -424,17 +460,24 @@
              '<div class="chip-list">' + chips + '</div></div>';
     }).join('');
 
-    var canStart = practice.selected.size > 0;
+    var canStart = practice.selected.size > 0 &&
+                   (practice.source === 'common' || histLen > 0);
+    var note = '';
+    if (practice.source === 'recent' && histLen === 0) note = 'Non hai ancora cercato verbi — prova “Più comuni”.';
+    else if (practice.selected.size === 0) note = 'Scegli almeno un tempo.';
+
     $practice.innerHTML = prHead() +
       '<div class="pr-setup">' +
-        '<div class="pr-field"><span class="pr-field-label">Verbi</span>' +
+        '<div class="pr-field"><span class="pr-field-label">Verbi da ripassare</span>' +
+          '<div class="chip-list">' + sourceChips + '</div></div>' +
+        '<div class="pr-field"><span class="pr-field-label">' + countLabel + '</span>' +
           '<div class="chip-list">' + countChips + '</div></div>' +
         '<div class="pr-field"><span class="pr-field-label">Lunghezza</span>' +
           '<div class="chip-list">' + lenChips + '</div></div>' +
         '<div class="pr-field"><span class="pr-field-label">Tempi</span>' +
           '<div class="pr-tenses">' + tenseGroups + '</div></div>' +
         '<button class="pr-start" id="prStart" type="button"' + (canStart ? '' : ' disabled') + '>Inizia →</button>' +
-        (canStart ? '' : '<p class="pr-note">Scegli almeno un tempo.</p>') +
+        (note ? '<p class="pr-note">' + esc(note) + '</p>' : '') +
       '</div>';
   }
 
@@ -594,8 +637,16 @@
     if (e.target.closest('#prBackSetup')) { renderPracticeSetup(); return; }
     if (e.target.closest('#prNext')) { nextQuestion(); return; }
 
+    var src = e.target.closest('.pr-source');
+    if (src) { practice.source = src.getAttribute('data-source'); renderPracticeSetup(); return; }
     var cnt = e.target.closest('.pr-count');
     if (cnt) { practice.verbCount = parseInt(cnt.getAttribute('data-count'), 10); renderPracticeSetup(); return; }
+    var ccnt = e.target.closest('.pr-common-count');
+    if (ccnt) {
+      var cv = ccnt.getAttribute('data-count');
+      practice.commonCount = (cv === 'all') ? 'all' : parseInt(cv, 10);
+      renderPracticeSetup(); return;
+    }
     var len = e.target.closest('.pr-len');
     if (len) {
       var v = len.getAttribute('data-len');
