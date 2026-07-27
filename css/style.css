@@ -45,6 +45,7 @@ html, body {
 }
 
 .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+main.wrap { padding-bottom: 30px; }   /* keep the last block off the footer rule */
 
 /* ------------------------------ masthead ------------------------------ */
 .masthead { padding: 24px 0 22px; }
@@ -164,7 +165,7 @@ html, body {
 
 /* ------------------------------ practice ------------------------------ */
 .practice {
-  max-width: 640px; margin: 22px auto 44px;
+  max-width: 640px; margin: 22px auto 24px;
   border: var(--edge-2) solid var(--ink); border-radius: var(--radius);
   background: var(--card); box-shadow: var(--shadow);
   padding: 18px 20px 22px;
