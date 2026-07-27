@@ -195,7 +195,12 @@ html, body {
   text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
 }
 .pr-dim { color: var(--muted); font-weight: 400; }
+/* keep the "(n)" readable when the chip is selected (white text on green) */
+.chip.on .pr-dim { color: rgba(255, 255, 255, 0.72); }
 .chip:disabled { opacity: 0.4; cursor: not-allowed; }
+/* give the practice chips clear breathing room so the hard shadow of a
+   selected chip never reads as touching its neighbour */
+.pr-setup .chip-list { gap: 12px; }
 .pr-start {
   align-self: flex-start;
   font-family: var(--f-head); font-size: 14px; font-weight: 700;
