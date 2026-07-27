@@ -7,12 +7,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,600;1,6..72,500&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&family=Caveat:wght@600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
 </head>
 <body>
   <header class="masthead">
     <div class="wrap">
-      <span class="brand-kick">Italiano Yopta</span>
+      <div class="mast-top">
+        <span class="brand-kick">Italiano Yopta</span>
+        <button class="ripeti-btn" id="ripetiBtn" type="button" hidden>Ripeti ↻</button>
+      </div>
       <h1 class="logo">CONIUGATORE<span class="dot">.</span></h1>
       <p class="tagline">Coniugatore di verbi italiani — con l'accento tonico segnato su ogni forma</p>
     </div>
@@ -36,6 +39,12 @@
         <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
       </div>
     </section>
+
+    <!-- RECENT LOOKUPS -->
+    <div id="recent" class="recent" hidden></div>
+
+    <!-- PRACTICE / REPETITION -->
+    <section id="practice" class="practice" hidden aria-live="polite"></section>
 
     <!-- RESULT -->
     <section id="result" class="result" hidden>
@@ -69,8 +78,8 @@
     <p class="hand-note">Fatto con <span class="heart">❤</span> e caffè</p>
   </footer>
 
-  <script src="js/engine.js?v=7"></script>
-  <script src="js/verbs.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/engine.js?v=8"></script>
+  <script src="js/verbs.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

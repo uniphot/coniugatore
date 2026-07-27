@@ -27,6 +27,9 @@
   var $selector = document.getElementById('tenseSelector');
   var $tables   = document.getElementById('tables');
   var $emptyHint= document.getElementById('emptyHint');
+  var $recent   = document.getElementById('recent');
+  var $practice = document.getElementById('practice');
+  var $ripeti   = document.getElementById('ripetiBtn');
 
   var activeIndex = -1;
   var currentSuggestions = [];
@@ -143,10 +146,16 @@
     $search.setAttribute('aria-expanded', 'false');
     $block.classList.add('docked');
     $result.hidden = false;
+    recordHistory(verb.inf);
     renderVerbHead();
     renderSelector();
     renderTables();
     $result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Open a verb by infinitive (real one if known, else a regular-schema fallback).
+  function openInf(inf) {
+    selectVerb(VERBS[inf] || buildFallback(inf));
   }
 
   var GROUP_LABEL = { are: '1ª · -are', ere: '2ª · -ere', ire: '3ª · -ire', ire_isc: '3ª · -ire (isc)' };
@@ -249,6 +258,272 @@
   }
 
   // =====================================================================
+  //  LOOKUP HISTORY  (localStorage, per browser)
+  // =====================================================================
+  var HISTORY_KEY = 'iy_history_v1';
+  var HISTORY_MAX = 50;
+
+  function loadHistory() {
+    try {
+      var arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+  function recordHistory(inf) {
+    var arr = loadHistory().filter(function (h) { return h.inf !== inf; });
+    arr.unshift({ inf: inf, ts: Date.now() });
+    if (arr.length > HISTORY_MAX) arr = arr.slice(0, HISTORY_MAX);
+    saveHistory(arr);
+    renderRecent();
+    updateRipetiVisibility();
+  }
+  function clearHistory() {
+    saveHistory([]);
+    renderRecent();
+    updateRipetiVisibility();
+    if (practice.active) closePractice();
+  }
+
+  function renderRecent() {
+    var arr = loadHistory();
+    if (!arr.length) { $recent.hidden = true; $recent.innerHTML = ''; return; }
+    var chips = arr.slice(0, 14).map(function (h) {
+      return '<button class="recent-chip" type="button" data-inf="' + esc(h.inf) + '">' +
+               esc(h.inf) + '</button>';
+    }).join('');
+    $recent.innerHTML =
+      '<span class="recent-label">Recenti</span>' +
+      '<div class="recent-list">' + chips + '</div>' +
+      '<button class="mini recent-clear" id="recentClear" type="button">svuota</button>';
+    $recent.hidden = false;
+  }
+
+  function updateRipetiVisibility() {
+    $ripeti.hidden = loadHistory().length === 0;
+  }
+
+  // =====================================================================
+  //  PRACTICE / REPETITION MODE
+  // =====================================================================
+  var practice = {
+    active: false,
+    selected: new Set(['presente']),
+    verbCount: 10,      // how many recent verbs to draw from
+    length: 20,         // session length: a number, or 'all'
+    queue: [],
+    idx: 0,
+    score: 0,
+    answered: false
+  };
+
+  function stripDia(s) {
+    return String(s).toLowerCase()
+      .replace(/[àá]/g, 'a').replace(/[èé]/g, 'e').replace(/[ìí]/g, 'i')
+      .replace(/[òó]/g, 'o').replace(/[ùú]/g, 'u')
+      .replace(/[’']/g, "'")
+      .replace(/\s+/g, ' ').trim();
+  }
+  // Split "andato/a" -> ["andato","andata"]; "andati/e" -> ["andati","andate"].
+  function ppVariants(ppText) {
+    var slash = ppText.indexOf('/');
+    if (slash === -1) return [ppText];
+    var base = ppText.slice(0, slash);
+    var altV = ppText.slice(slash + 1);           // 'a' or 'e'
+    return [base, base.slice(0, -1) + altV];
+  }
+  function acceptableAnswers(form) {
+    if (!form.compound) return [stripDia(form.text)];
+    var aux = form.aux.text;
+    return ppVariants(form.ppText).map(function (pp) { return stripDia(aux + ' ' + pp); });
+  }
+  function isCorrect(userText, form) {
+    return acceptableAnswers(form).indexOf(stripDia(userText)) !== -1;
+  }
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function buildQueue() {
+    var pool = loadHistory().slice(0, practice.verbCount).map(function (h) {
+      return VERBS[h.inf] || buildFallback(h.inf);
+    });
+    var tenses = C.TENSES.filter(function (t) { return practice.selected.has(t.key); });
+    var q = [];
+    pool.forEach(function (v) {
+      tenses.forEach(function (t) {
+        var forms = C.conjugate(v, t.key, VERBS);
+        if (!forms) return;   // e.g. defective imperative
+        var subjects = t.imperative ? C.IMP_SUBJECTS : C.SUBJECTS;
+        forms.forEach(function (f, i) {
+          q.push({ inf: v.inf, label: t.label, mood: t.mood, subject: subjects[i], form: f });
+        });
+      });
+    });
+    shuffle(q);
+    if (practice.length !== 'all' && q.length > practice.length) q = q.slice(0, practice.length);
+    return q;
+  }
+
+  function openPractice() {
+    practice.active = true;
+    $practice.hidden = false;
+    renderPracticeSetup();
+    $practice.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function closePractice() {
+    practice.active = false;
+    practice.queue = [];
+    $practice.hidden = true;
+    $practice.innerHTML = '';
+  }
+
+  function prHead(extra) {
+    return '<div class="pr-head">' +
+             '<h2 class="pr-title">Ripetizione</h2>' +
+             (extra || '') +
+             '<button class="mini" id="prClose" type="button">chiudi</button>' +
+           '</div>';
+  }
+
+  function renderPracticeSetup() {
+    var histLen = loadHistory().length;
+    if (!histLen) {
+      $practice.innerHTML = prHead() +
+        '<p class="pr-note">Cerca prima qualche verbo — appariranno qui per allenarti.</p>';
+      return;
+    }
+
+    var countChips = [5, 10, 20].map(function (n) {
+      var on = practice.verbCount === n ? ' on' : '';
+      var avail = Math.min(n, histLen);
+      return '<button class="chip pr-count' + on + '" type="button" data-count="' + n + '">ultimi ' + n +
+             (avail < n ? ' <span class="pr-dim">(' + avail + ')</span>' : '') + '</button>';
+    }).join('');
+
+    var lenChips = [20, 'all'].map(function (n) {
+      var on = practice.length === n ? ' on' : '';
+      return '<button class="chip pr-len' + on + '" type="button" data-len="' + n + '">' +
+             (n === 'all' ? 'tutte' : n + ' domande') + '</button>';
+    }).join('');
+
+    var tenseGroups = moods().map(function (g) {
+      var chips = g.tenses.map(function (t) {
+        var on = practice.selected.has(t.key) ? ' on' : '';
+        return '<button class="chip pr-tense' + on + '" type="button" data-key="' + t.key + '">' +
+                 esc(t.label) + '</button>';
+      }).join('');
+      return '<div class="pr-mood"><span class="pr-mood-name">' + esc(g.mood) + '</span>' +
+             '<div class="chip-list">' + chips + '</div></div>';
+    }).join('');
+
+    var canStart = practice.selected.size > 0;
+    $practice.innerHTML = prHead() +
+      '<div class="pr-setup">' +
+        '<div class="pr-field"><span class="pr-field-label">Verbi</span>' +
+          '<div class="chip-list">' + countChips + '</div></div>' +
+        '<div class="pr-field"><span class="pr-field-label">Lunghezza</span>' +
+          '<div class="chip-list">' + lenChips + '</div></div>' +
+        '<div class="pr-field"><span class="pr-field-label">Tempi</span>' +
+          '<div class="pr-tenses">' + tenseGroups + '</div></div>' +
+        '<button class="pr-start" id="prStart" type="button"' + (canStart ? '' : ' disabled') + '>Inizia →</button>' +
+        (canStart ? '' : '<p class="pr-note">Scegli almeno un tempo.</p>') +
+      '</div>';
+  }
+
+  function startPractice() {
+    practice.queue = buildQueue();
+    practice.idx = 0;
+    practice.score = 0;
+    practice.answered = false;
+    if (!practice.queue.length) { renderPracticeSetup(); return; }
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    var total = practice.queue.length;
+    var q = practice.queue[practice.idx];
+    var progress = '<span class="pr-progress">' + (practice.idx + 1) + ' / ' + total +
+                   ' · <b>' + practice.score + '</b> ✓</span>';
+    $practice.innerHTML = prHead(progress) +
+      '<div class="pr-quiz">' +
+        '<div class="pr-prompt">' +
+          '<span class="pr-inf">' + esc(q.inf) + '</span>' +
+          '<span class="pr-cue">' + esc(q.subject) + ' · ' + esc(q.label) +
+            ' <span class="pr-mood-tag">' + esc(q.mood) + '</span></span>' +
+        '</div>' +
+        '<form class="pr-answer" id="prForm" autocomplete="off">' +
+          '<input class="pr-input" id="prInput" type="text" autocomplete="off" ' +
+            'autocapitalize="off" autocorrect="off" spellcheck="false" ' +
+            'placeholder="scrivi la forma…" aria-label="La tua risposta" />' +
+          '<button class="pr-check" id="prCheck" type="submit">Verifica</button>' +
+        '</form>' +
+        '<div class="pr-feedback" id="prFeedback"></div>' +
+      '</div>';
+    var inp = document.getElementById('prInput');
+    if (inp) inp.focus();
+  }
+
+  function submitAnswer() {
+    if (practice.answered) return;
+    var inp = document.getElementById('prInput');
+    if (!inp) return;
+    var val = inp.value.trim();
+    if (!val) return;
+    practice.answered = true;
+    var q = practice.queue[practice.idx];
+    var ok = isCorrect(val, q.form);
+    if (ok) practice.score++;
+
+    inp.classList.add(ok ? 'ok' : 'no');
+    inp.disabled = true;
+    document.getElementById('prCheck').disabled = true;
+
+    var last = practice.idx === practice.queue.length - 1;
+    var fb = document.getElementById('prFeedback');
+    fb.innerHTML =
+      '<div class="pr-verdict ' + (ok ? 'ok' : 'no') + '">' +
+        (ok ? '✓ Giusto!' : '✗ Non proprio') +
+      '</div>' +
+      '<div class="pr-correct"><span class="pr-correct-label">Forma corretta</span>' +
+        '<span class="pr-correct-form">' + renderForm(q.form) + '</span></div>' +
+      '<button class="pr-next" id="prNext" type="button">' +
+        (last ? 'Risultato →' : 'Avanti →') + '</button>';
+    var nb = document.getElementById('prNext');
+    if (nb) nb.focus();
+  }
+
+  function nextQuestion() {
+    if (practice.idx >= practice.queue.length - 1) { renderSummary(); return; }
+    practice.idx++;
+    practice.answered = false;
+    renderQuestion();
+  }
+
+  function renderSummary() {
+    var total = practice.queue.length;
+    var pct = total ? Math.round((practice.score / total) * 100) : 0;
+    var msg = pct >= 90 ? 'Bravissimo!' : pct >= 70 ? 'Bel lavoro.' :
+              pct >= 50 ? 'Continua così.' : 'Da ripassare.';
+    $practice.innerHTML = prHead() +
+      '<div class="pr-summary">' +
+        '<div class="pr-score-big">' + practice.score + ' / ' + total + '</div>' +
+        '<div class="pr-score-pct">' + pct + '% · ' + msg + '</div>' +
+        '<div class="pr-summary-actions">' +
+          '<button class="pr-start" id="prAgain" type="button">Ancora →</button>' +
+          '<button class="mini" id="prBackSetup" type="button">cambia impostazioni</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // =====================================================================
   //  EVENTS
   // =====================================================================
   $search.addEventListener('input', function () {
@@ -302,6 +577,52 @@
     state.selected = new Set(COMMON);
     renderSelector(); renderTables();
   });
+
+  // ------- recent lookups -------
+  $recent.addEventListener('click', function (e) {
+    var chip = e.target.closest('.recent-chip');
+    if (chip) { openInf(chip.getAttribute('data-inf')); return; }
+    if (e.target.closest('#recentClear')) clearHistory();
+  });
+
+  // ------- practice mode -------
+  $ripeti.addEventListener('click', openPractice);
+
+  $practice.addEventListener('click', function (e) {
+    if (e.target.closest('#prClose')) { closePractice(); return; }
+    if (e.target.closest('#prStart') || e.target.closest('#prAgain')) { startPractice(); return; }
+    if (e.target.closest('#prBackSetup')) { renderPracticeSetup(); return; }
+    if (e.target.closest('#prNext')) { nextQuestion(); return; }
+
+    var cnt = e.target.closest('.pr-count');
+    if (cnt) { practice.verbCount = parseInt(cnt.getAttribute('data-count'), 10); renderPracticeSetup(); return; }
+    var len = e.target.closest('.pr-len');
+    if (len) {
+      var v = len.getAttribute('data-len');
+      practice.length = (v === 'all') ? 'all' : parseInt(v, 10);
+      renderPracticeSetup(); return;
+    }
+    var tn = e.target.closest('.pr-tense');
+    if (tn) {
+      var key = tn.getAttribute('data-key');
+      if (practice.selected.has(key)) practice.selected.delete(key);
+      else practice.selected.add(key);
+      renderPracticeSetup(); return;
+    }
+  });
+
+  $practice.addEventListener('submit', function (e) {
+    if (e.target.id === 'prForm') { e.preventDefault(); submitAnswer(); }
+  });
+  // Enter submits the answer, then Enter again advances to the next question.
+  $practice.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    if (e.target.id === 'prInput') { e.preventDefault(); submitAnswer(); }
+  });
+
+  // ------- init -------
+  renderRecent();
+  updateRipetiVisibility();
 
   // focus search on load
   $search.focus();
