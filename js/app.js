@@ -9,6 +9,7 @@
   var VERBS = window.VerbData.VERBS;
   var LIST = window.VerbData.VERB_LIST;
   var RANKED = window.VerbData.COMMON_RANKED || [];
+  var SYN = window.VerbSynonyms || { get: function () { return null; }, levelOf: function () { return null; } };
 
   var COMMON = ['presente', 'imperfetto', 'passatoProssimo', 'futuroSemplice',
                 'congPresente', 'condizionale'];
@@ -28,6 +29,7 @@
   var $selector = document.getElementById('tenseSelector');
   var $tables   = document.getElementById('tables');
   var $emptyHint= document.getElementById('emptyHint');
+  var $synBlock = document.getElementById('synBlock');
   var $recent   = document.getElementById('recent');
   var $practice = document.getElementById('practice');
   var $ripeti   = document.getElementById('ripetiBtn');
@@ -58,6 +60,14 @@
       html += '<span class="approx-dot" title="Ударение в основе определено автоматически — проверьте">•</span>';
     }
     return html;
+  }
+
+  // =====================================================================
+  //  CEFR LEVEL BADGES
+  // =====================================================================
+  function lvlBadge(level) {
+    if (!level) return '';
+    return '<span class="lvl lvl-' + esc(level) + '">' + esc(level) + '</span>';
   }
 
   // =====================================================================
@@ -111,9 +121,22 @@
     }
     $sugg.innerHTML = list.map(function (r, idx) {
       var cls = 'sugg-item' + (r.fallback ? ' s-fallback' : '');
+      var syns = SYN.get(r.inf) || [];
+      var synHtml = '';
+      if (syns.length) {
+        synHtml = '<span class="s-syn">' +
+          syns.slice(0, 3).map(function (s) {
+            return '<span class="s-syn-item">' + esc(s.inf) + lvlBadge(s.level) + '</span>';
+          }).join('') +
+          (syns.length > 3 ? '<span class="s-syn-more">+' + (syns.length - 3) + '</span>' : '') +
+          '</span>';
+      }
       return '<li class="' + cls + '" role="option" data-idx="' + idx + '">' +
-               '<span class="s-inf">' + esc(r.inf) + '</span>' +
-               '<span class="s-tr">' + esc(r.tr || '') + '</span>' +
+               '<span class="s-main">' +
+                 '<span class="s-inf">' + esc(r.inf) + '</span>' +
+                 lvlBadge(SYN.levelOf(r.inf)) +
+                 '<span class="s-tr">' + esc(r.tr || '') + '</span>' +
+               '</span>' + synHtml +
              '</li>';
     }).join('');
     $sugg.hidden = false;
@@ -149,6 +172,7 @@
     $result.hidden = false;
     recordHistory(verb.inf);
     renderVerbHead();
+    renderSynonyms();
     renderSelector();
     renderTables();
     $result.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,6 +194,7 @@
       ? '<span class="vh-tr" style="color:var(--accent-2)">auto · schema regolare</span>' : '';
     $verbHead.innerHTML =
       '<span class="vh-inf">' + esc(v.inf) + '</span>' +
+      lvlBadge(SYN.levelOf(v.inf)) +
       trHtml + fallbackTag +
       '<span class="vh-meta">' +
         '<span><b>gruppo</b> ' + (GROUP_LABEL[v.group] || v.group) + '</span>' +
@@ -177,6 +202,34 @@
         '<span><b>part.</b> <span class="form">' + markStress(pp.text, pp.stress) + '</span></span>' +
         '<span><b>ger.</b> <span class="form">' + markStress(ger.text, ger.stress) + '</span></span>' +
       '</span>';
+  }
+
+  // =====================================================================
+  //  SYNONYMS
+  // =====================================================================
+  function renderSynonyms() {
+    var syns = SYN.get(state.verb.inf);
+    if (!syns || !syns.length) {
+      $synBlock.hidden = true;
+      $synBlock.innerHTML = '';
+      return;
+    }
+    // easiest first, so a learner sees the reachable alternative before the literary one
+    var order = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 };
+    var sorted = syns.slice().sort(function (a, b) {
+      return (order[a.level] || 9) - (order[b.level] || 9);
+    });
+    $synBlock.innerHTML =
+      '<span class="syn-label">Sinonimi</span>' +
+      '<div class="syn-list">' +
+        sorted.map(function (s) {
+          return '<button class="syn-chip" type="button" data-inf="' + esc(s.inf) + '" ' +
+                   'title="Coniuga ' + esc(s.inf) + '">' +
+                   '<span class="syn-inf">' + esc(s.inf) + '</span>' + lvlBadge(s.level) +
+                 '</button>';
+        }).join('') +
+      '</div>';
+    $synBlock.hidden = false;
   }
 
   // =====================================================================
@@ -619,6 +672,12 @@
   document.getElementById('selCommon').addEventListener('click', function () {
     state.selected = new Set(COMMON);
     renderSelector(); renderTables();
+  });
+
+  // ------- synonyms -------
+  $synBlock.addEventListener('click', function (e) {
+    var chip = e.target.closest('.syn-chip');
+    if (chip) openInf(chip.getAttribute('data-inf'));
   });
 
   // ------- recent lookups -------
