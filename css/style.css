@@ -477,11 +477,18 @@ main.wrap { padding-bottom: 30px; }   /* keep the last block off the footer rule
 .foot .stress-demo .stress { border-bottom-color: var(--red); }
 .legend-approx { color: var(--red); font-weight: 700; margin: 0 3px; }
 .foot .brand-foot {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-family: var(--f-mono); font-size: 12px;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  line-height: 1.9;   /* room for the inline-block pill when the line wraps */
 }
-.foot .brand-foot b { color: var(--deep); background: var(--mint-soft); border: 1.5px solid var(--ink); border-radius: 999px; padding: 2px 9px 3px; }
+/* inline-block so the pill's padding/border add to the line box instead of
+   bleeding over the line above when the paragraph wraps on narrow screens */
+.foot .brand-foot b {
+  display: inline-block; vertical-align: middle; line-height: 1.3;
+  color: var(--deep); background: var(--mint-soft);
+  border: 1.5px solid var(--ink); border-radius: 999px; padding: 2px 9px 3px;
+}
 .foot .hand-note { margin: 0; font-family: var(--f-hand); font-size: 20px; color: var(--ink); }
 .foot .hand-note .heart { color: var(--red); }
 
