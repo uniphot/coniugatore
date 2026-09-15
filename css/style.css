@@ -497,4 +497,16 @@ main.wrap { padding-bottom: 30px; }   /* keep the last block off the footer rule
   .conj-row { grid-template-columns: 66px 1fr; }
   .pr-answer { flex-direction: column; }
   .pr-check { padding: 12px 18px; }
+
+  /* Let the chips use the full row: drop the label onto its own line and stop
+     the list from claiming the leftover space (which squeezed chips into a
+     narrow indented column and stranded the trailing button far right). */
+  .recent-label, .syn-label { flex: 0 0 100%; }
+  .recent-list, .syn-list   { flex: 0 1 auto; }
+
+  /* fit title + progress + close on a single row */
+  .pr-head { gap: 8px; }
+  .pr-title { font-size: 13px; }
+  .pr-head .pr-progress { white-space: nowrap; font-size: 11px; }
+  .pr-head #prClose { padding: 6px 10px; font-size: 11px; }
 }
