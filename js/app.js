@@ -291,7 +291,7 @@
 
   function renderCard(v, t) {
     var forms = C.conjugate(v, t.key, VERBS);
-    var subjects = t.imperative ? C.IMP_SUBJECTS : C.SUBJECTS;
+    var subjects = t.imperative ? C.imperativeSubjects(t.key) : C.SUBJECTS;
     var rows;
     if (!forms) {
       rows = '<div class="conj-row none"><span class="subj"></span>' +
@@ -431,7 +431,7 @@
       tenses.forEach(function (t) {
         var forms = C.conjugate(v, t.key, VERBS);
         if (!forms) return;   // e.g. defective imperative
-        var subjects = t.imperative ? C.IMP_SUBJECTS : C.SUBJECTS;
+        var subjects = t.imperative ? C.imperativeSubjects(t.key) : C.SUBJECTS;
         forms.forEach(function (f, i) {
           q.push({ inf: v.inf, label: t.label, mood: t.mood, subject: subjects[i], form: f });
         });

@@ -17,6 +17,16 @@
 
   var SUBJECTS = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro'];
   var IMP_SUBJECTS = ['(tu)', '(Lei)', '(noi)', '(voi)', '(Loro)'];
+  // Imperativo splits into two selectable registers in the UI. Indices are
+  // into IMP_SUBJECTS / the 5-element imperativo conjugation arrays.
+  var IMP_REGISTER = {
+    imperativoInformale: [0, 2, 3],   // tu, noi, voi
+    imperativoFormale:   [1, 4]       // Lei, Loro
+  };
+  function imperativeSubjects(tenseKey) {
+    var idx = IMP_REGISTER[tenseKey];
+    return idx ? idx.map(function (i) { return IMP_SUBJECTS[i]; }) : IMP_SUBJECTS;
+  }
 
   var VOWELS = 'aeiouàèéìíòóùúAEIOU';
   var ACCENTED = 'àèéìíòóùú';
@@ -316,12 +326,18 @@
     { mood: 'Condizionale', key: 'condizionale', label: 'Presente' },
     { mood: 'Condizionale', key: 'condPassato',  label: 'Passato', compound: true },
 
-    { mood: 'Imperativo', key: 'imperativo', label: 'Presente', imperative: true }
+    { mood: 'Imperativo', key: 'imperativoInformale', label: 'Informale', imperative: true },
+    { mood: 'Imperativo', key: 'imperativoFormale',   label: 'Formale',   imperative: true }
   ];
 
   function conjugate(v, tenseKey, dict) {
-    // Defective verbs (potere/volere/dovere) have no real imperative.
-    if (tenseKey === 'imperativo' && v.defectiveImperative) return null;
+    var impIdx = IMP_REGISTER[tenseKey];
+    if (impIdx) {
+      // Defective verbs (potere/volere/dovere) have no real imperative.
+      if (v.defectiveImperative) return null;
+      var all = conjugateSimple(v, 'imperativo');
+      return impIdx.map(function (i) { return all[i]; });
+    }
     if (COMPOUND_AUX[tenseKey]) return conjugateCompound(v, tenseKey, dict);
     return conjugateSimple(v, tenseKey);
   }
@@ -342,6 +358,7 @@
   global.Conjugator = {
     SUBJECTS: SUBJECTS,
     IMP_SUBJECTS: IMP_SUBJECTS,
+    imperativeSubjects: imperativeSubjects,
     TENSES: TENSES,
     conjugate: conjugate,
     participle: participle,
